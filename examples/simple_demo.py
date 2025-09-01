@@ -6,6 +6,19 @@ with the py-nbody package.
 """
 import sys
 from pathlib import Path
+import matplotlib
+import matplotlib.pyplot as plt
+
+# Ensure we use an interactive backend for GUI display
+try:
+    # Try to use a GUI backend
+    matplotlib.use('TkAgg')  # or 'Qt5Agg' if available
+except ImportError:
+    try:
+        matplotlib.use('Qt5Agg')
+    except ImportError:
+        print("Warning: No GUI backend available. Using default backend.")
+        pass
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -38,7 +51,11 @@ def demo_earth_moon_system():
     
     # Show results
     print("Displaying results...")
-    quick_plot(engine.bodies, show_trails=True)
+    try:
+        quick_plot(engine.bodies, show_trails=True)
+        plt.show(block=True)  # Keep window open until user closes it
+    except Exception as e:
+        print(f"Error displaying plot: {e}")
 
 
 def demo_inner_solar_system():
@@ -71,7 +88,11 @@ def demo_inner_solar_system():
     
     # Show results
     print("Displaying results...")
-    quick_plot(engine.bodies, show_trails=True)
+    try:
+        quick_plot(engine.bodies, show_trails=True)
+        plt.show(block=True)  # Keep window open until user closes it
+    except Exception as e:
+        print(f"Error displaying plot: {e}")
 
 
 def demo_custom_system():
@@ -128,7 +149,11 @@ def demo_custom_system():
     
     # Show results
     print("Displaying results...")
-    quick_plot(engine.bodies, show_trails=True)
+    try:
+        quick_plot(engine.bodies, show_trails=True)
+        plt.show(block=True)  # Keep window open until user closes it
+    except Exception as e:
+        print(f"Error displaying plot: {e}")
 
 
 def demo_interactive():
@@ -136,6 +161,7 @@ def demo_interactive():
     print("Creating interactive simulation...")
     print("This will open an interactive window with controls.")
     print("Use the Play/Pause button to control the simulation.")
+    print("Close the window when you're done to continue.")
     
     # Create physics engine
     engine = PhysicsEngine(integration_method="rk4")
@@ -145,9 +171,27 @@ def demo_interactive():
     bodies = get_preset_system("inner")
     engine.add_bodies(bodies)
     
+    print(f"System created with {len(bodies)} bodies:")
+    for body in bodies:
+        print(f"  - {body.name}: mass={body.mass:.2e} kg")
+    
     # Create interactive animation
-    animation = create_interactive_animation(engine, update_interval=100)
-    animation.show()
+    try:
+        animation = create_interactive_animation(engine, update_interval=100)
+        
+        # Show the animation and keep it alive
+        print("Opening interactive window...")
+        animation.show()
+        
+        # Keep the script running until the window is closed
+        plt.show(block=True)
+        
+    except Exception as e:
+        print(f"Error creating interactive animation: {e}")
+        print("Falling back to static plot...")
+        # Run a short simulation and show static plot
+        engine.run(steps=50)
+        quick_plot(engine.bodies, show_trails=True)
 
 
 def main():

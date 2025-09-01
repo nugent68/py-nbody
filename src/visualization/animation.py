@@ -47,8 +47,10 @@ class InteractiveAnimation:
         # Main 3D plot (takes most of the space)
         self.ax_main = self.fig.add_subplot(111, projection='3d')
         
-        # Create plotter for 3D visualization
-        self.plotter = Plotter3D()
+        # Create plotter for 3D visualization with proper initialization
+        self.plotter = Plotter3D(figure_size=figure_size, background_color='black')
+        # Replace the plotter's figure and axis with our animation figure
+        plt.close(self.plotter.fig)  # Close the plotter's original figure
         self.plotter.fig = self.fig
         self.plotter.ax = self.ax_main
         self.plotter._setup_axes()
@@ -158,6 +160,7 @@ class InteractiveAnimation:
         Args:
             frame_num: Frame number (from FuncAnimation)
         """
+        # Only advance simulation if not paused
         if not self.is_paused:
             # Run simulation steps
             for _ in range(self.steps_per_frame):
@@ -165,7 +168,7 @@ class InteractiveAnimation:
             
             self.frame_count += 1
         
-        # Update visualization
+        # Always update visualization (even when paused)
         self.plotter.plot_trajectories(self.engine.bodies, show_labels=True)
         
         # Update info text
@@ -177,6 +180,9 @@ class InteractiveAnimation:
         # Call frame callback if provided
         if self.frame_callback:
             self.frame_callback(self.engine, self.frame_count)
+        
+        # Force redraw
+        self.fig.canvas.draw_idle()
     
     def _update_info_text(self) -> None:
         """Update the information text display."""
@@ -260,6 +266,15 @@ class InteractiveAnimation:
     
     def show(self) -> None:
         """Display the animation window."""
+        # Ensure the figure is current
+        plt.figure(self.fig.number)
+        
+        # Display initial frame immediately
+        self._update_frame(0)
+        
+        # Force a draw to ensure everything is rendered
+        self.fig.canvas.draw()
+        
         plt.show()
     
     def close(self) -> None:

@@ -63,10 +63,10 @@ class Plotter3D:
         if not self.show_axes:
             self.ax.set_axis_off()
         
-        # Set labels
-        self.ax.set_xlabel('X (m)', color='white')
-        self.ax.set_ylabel('Y (m)', color='white')
-        self.ax.set_zlabel('Z (m)', color='white')
+        # Set labels with better units for astronomical scales
+        self.ax.set_xlabel('X (AU)', color='white')
+        self.ax.set_ylabel('Y (AU)', color='white')
+        self.ax.set_zlabel('Z (AU)', color='white')
         
         # Set tick colors
         self.ax.tick_params(colors='white')
@@ -141,6 +141,9 @@ class Plotter3D:
             body: Body object to plot
             show_label: Whether to show body label
         """
+        # Astronomical Unit for scaling
+        AU = 1.496e11  # meters
+        
         # Calculate visual size (logarithmic scaling for better visibility)
         base_size = 50
         if body.name.lower() == 'sun':
@@ -148,13 +151,18 @@ class Plotter3D:
         else:
             size = base_size * self.body_scale_factor
         
+        # Convert positions to AU for plotting
+        x_au = body.position.x / AU
+        y_au = body.position.y / AU
+        z_au = body.position.z / AU
+        
         # Plot body as a sphere
-        self.ax.scatter(body.position.x, body.position.y, body.position.z,
+        self.ax.scatter(x_au, y_au, z_au,
                        c=body.color, s=size, alpha=0.8, edgecolors='white', linewidth=0.5)
         
         # Add label
         if show_label:
-            self.ax.text(body.position.x, body.position.y, body.position.z,
+            self.ax.text(x_au, y_au, z_au,
                         f'  {body.name}', color='white', fontsize=8)
     
     def plot_trajectories(self, bodies: List[Body], show_labels: bool = True) -> None:
@@ -189,6 +197,9 @@ class Plotter3D:
         if not self.show_trails or len(body.trajectory) < 2:
             return
         
+        # Astronomical Unit for scaling
+        AU = 1.496e11  # meters
+        
         # Get trajectory coordinates
         x_coords, y_coords, z_coords = body.get_trajectory_arrays()
         
@@ -198,16 +209,21 @@ class Plotter3D:
             y_coords = y_coords[-self.trail_length:]
             z_coords = z_coords[-self.trail_length:]
         
+        # Convert to AU for plotting
+        x_coords_au = [x / AU for x in x_coords]
+        y_coords_au = [y / AU for y in y_coords]
+        z_coords_au = [z / AU for z in z_coords]
+        
         # Plot trail with fading effect
-        if len(x_coords) > 1:
+        if len(x_coords_au) > 1:
             # Create alpha values for fading effect
-            alphas = np.linspace(0.1, 0.8, len(x_coords))
+            alphas = np.linspace(0.1, 0.8, len(x_coords_au))
             
             # Plot trail segments
-            for i in range(len(x_coords) - 1):
-                self.ax.plot([x_coords[i], x_coords[i+1]],
-                           [y_coords[i], y_coords[i+1]],
-                           [z_coords[i], z_coords[i+1]],
+            for i in range(len(x_coords_au) - 1):
+                self.ax.plot([x_coords_au[i], x_coords_au[i+1]],
+                           [y_coords_au[i], y_coords_au[i+1]],
+                           [z_coords_au[i], z_coords_au[i+1]],
                            color=body.color, alpha=alphas[i], linewidth=1)
     
     def _update_scaling(self, bodies: List[Body]) -> None:
@@ -219,6 +235,9 @@ class Plotter3D:
         """
         if not bodies:
             return
+        
+        # Astronomical Unit for better scaling
+        AU = 1.496e11  # meters
         
         if self.auto_scale:
             # Calculate bounds from all body positions and trajectories
@@ -243,6 +262,15 @@ class Plotter3D:
                 z_range = max(all_z) - min(all_z)
                 
                 max_range = max(x_range, y_range, z_range)
+                
+                # Ensure minimum scale for visibility, but be smarter about it
+                if max_range < AU * 0.01:  # If range is less than 0.01 AU (very small system like Earth-Moon)
+                    max_range = AU * 0.02  # Set minimum scale to 0.02 AU
+                elif max_range < AU * 0.1:  # If range is less than 0.1 AU
+                    max_range = AU * 0.2   # Set minimum scale to 0.2 AU
+                elif max_range < AU:  # If range is less than 1 AU
+                    max_range = AU * 1.5   # Set minimum scale to 1.5 AU
+                
                 padding = max_range * 0.1
                 
                 center_x = (max(all_x) + min(all_x)) / 2
@@ -251,12 +279,13 @@ class Plotter3D:
                 
                 half_range = max_range / 2 + padding
                 
-                self.ax.set_xlim(center_x - half_range, center_x + half_range)
-                self.ax.set_ylim(center_y - half_range, center_y + half_range)
-                self.ax.set_zlim(center_z - half_range, center_z + half_range)
+                # Convert to AU for display
+                self.ax.set_xlim((center_x - half_range) / AU, (center_x + half_range) / AU)
+                self.ax.set_ylim((center_y - half_range) / AU, (center_y + half_range) / AU)
+                self.ax.set_zlim((center_z - half_range) / AU, (center_z + half_range) / AU)
         
         elif self.fixed_scale is not None:
-            # Use fixed scaling
+            # Use fixed scaling (assume fixed_scale is in AU)
             self.ax.set_xlim(-self.fixed_scale, self.fixed_scale)
             self.ax.set_ylim(-self.fixed_scale, self.fixed_scale)
             self.ax.set_zlim(-self.fixed_scale, self.fixed_scale)
