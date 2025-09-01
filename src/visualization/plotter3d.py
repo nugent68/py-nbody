@@ -160,10 +160,11 @@ class Plotter3D:
         self.ax.scatter(x_au, y_au, z_au,
                        c=body.color, s=size, alpha=0.8, edgecolors='white', linewidth=0.5)
         
-        # Add label
+        # Add label with same color as the body
         if show_label:
             self.ax.text(x_au, y_au, z_au,
-                        f'  {body.name}', color='white', fontsize=8)
+                        f'  {body.name}', color=body.color, fontsize=8,
+                        weight='bold')
     
     def plot_trajectories(self, bodies: List[Body], show_labels: bool = True) -> None:
         """
