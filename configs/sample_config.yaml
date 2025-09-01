@@ -1,0 +1,94 @@
+# Sample configuration file for n-body simulation
+# This demonstrates how to configure various aspects of the simulation
+
+simulation:
+  # Time step in seconds (86400 = 1 day)
+  time_step: 86400.0
+  
+  # Integration method: 'euler', 'rk4', 'leapfrog'
+  integration_method: "rk4"
+  
+  # Force calculation method: 'standard', 'softened'
+  force_method: "standard"
+  
+  # Maximum simulation steps (null for unlimited)
+  max_steps: null
+  
+  # Maximum simulation time in seconds (null for unlimited)
+  max_time: null
+  
+  # Softening length for force calculation (meters)
+  softening_length: 0.0
+
+system:
+  # System preset: 'inner', 'full', 'earth_moon', 'custom'
+  preset: "inner"
+  
+  # Distance scale factor (1.0 = real scale)
+  scale_factor: 1.0
+  
+  # Time scale factor (1.0 = real time)
+  time_scale: 1.0
+  
+  # Custom bodies (only used if preset is 'custom')
+  custom_bodies: []
+
+visualization:
+  # Show orbital trails
+  show_trails: true
+  
+  # Number of points in orbital trails
+  trail_length: 100
+  
+  # Animation update interval in milliseconds
+  update_interval: 50
+  
+  # Figure size [width, height] in inches
+  figure_size: [12, 9]
+  
+  # Show grid lines
+  show_grid: true
+  
+  # Show coordinate axes
+  show_axes: true
+  
+  # Background color
+  background_color: "black"
+  
+  # Automatic scaling of plot bounds
+  auto_scale: true
+  
+  # Fixed scale (used if auto_scale is false)
+  fixed_scale: null
+
+output:
+  # Save simulation data to files
+  save_data: false
+  
+  # Output directory for saved files
+  output_directory: "output"
+  
+  # Save data every N steps
+  save_interval: 100
+  
+  # Data format: 'csv', 'json', 'hdf5'
+  save_format: "csv"
+  
+  # Save trajectory data
+  save_trajectories: true
+  
+  # Save energy data
+  save_energy: true
+
+performance:
+  # Maximum frames per second for animation
+  max_fps: 30
+  
+  # Use adaptive time stepping
+  adaptive_time_step: false
+  
+  # Use parallel force calculation (experimental)
+  parallel_force_calculation: false
+  
+  # Memory limit in MB
+  memory_limit_mb: 1000
